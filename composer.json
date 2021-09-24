@@ -1,0 +1,20 @@
+{
+    "name": "drupal/alogin",
+    "description": "Allow users to setup 2FA via authenticator apps.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://www.drupal.org/project/alogin",
+    "support": {
+      "issues": "https://www.drupal.org/project/issues/alogin"
+    },
+    "require": {
+        "drupal/core": "^8.8 || ^9",
+        "sonata-project/google-authenticator": "^2.3"
+    },
+    "authors": [
+        {
+            "name": "Ahmed Raza",
+            "email": "raza1778@gmail.com"
+        }
+    ]
+}
