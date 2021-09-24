@@ -128,6 +128,8 @@ class TwoFaForm extends FormBase {
     }
     $account = User::load($this->currentId);
     user_login_finalize($account);
+    $this->tempstorePrivate->get('alogin')->delete('secret');
+    $this->tempstorePrivate->get('alogin')->delete('uid');
     $response->addCommand(new RedirectCommand('/user'));
     return $response;
   }
