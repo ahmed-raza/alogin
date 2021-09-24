@@ -11,6 +11,13 @@ function alogin_schema() {
         'not null'    => TRUE,
         'default'     => 0
       ],
+      'secret' => [
+        'description' => 'Barcode secret.',
+        'type'        => 'varchar_ascii',
+        'length'      => 255,
+        'not null'    => TRUE,
+        'default'     => 0
+      ],
       'enabled' => [
         'description' => 'OTP enabled or not.',
         'type'        => 'int',
