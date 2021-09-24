@@ -3,7 +3,8 @@
 namespace Drupal\alogin;
 
 use Drupal\Core\StringTranslation\TranslationManager;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Database\Connection;
@@ -17,24 +18,37 @@ use Sonata\GoogleAuthenticator\GoogleQrUrl;
  */
 class AuthenticatorService {
 
-  protected $secret, $issuer, $name, $database, $configFactory;
+  protected $secret, $issuer, $currentUser, $currentUid = 0, $database, $configFactory, $tempstorePrivate;
   protected $table = 'alogin_user_settings';
 
   /**
    * Constructs a new AuthenticatorService object.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $account, Connection $database) {
+  public function __construct(ConfigFactory $configFactory, PrivateTempStoreFactory $tempstorePrivate, AccountInterface $account, Connection $database) {
     $g = new GoogleAuthenticator();
-    $this->configFactory  = $config_factory;
-    $this->secret         = $g->generateSecret();
-    $this->issuer         = $this->configFactory->get('system.site')->get('name');
-    $this->name           = $account->getAccountName();
-    $this->database       = $database;
+    $this->tempstorePrivate = $tempstorePrivate;
+    $this->configFactory    = $configFactory;
+    $this->issuer           = $this->configFactory->get('system.site')->get('name');
+    $this->currentUser      = $account;
+    $this->database         = $database;
+    $this->currentUid       = $this->tempstorePrivate->get('alogin')->get('uid');
+
+    if ($this->currentUser->isAuthenticated()) {
+      $this->currentUid     = $this->currentUser->id();
+    }
+    if (!$this->getSecret($this->currentUid) && !$this->tempstorePrivate->get('alogin')->get('secret')) {
+      $this->tempstorePrivate->get('alogin')->set('secret', $g->generateSecret());
+    }
+    if ($this->getSecret($this->currentUid)) {
+      $this->secret         = $this->getSecret($this->currentUid);
+    } else {
+      $this->secret         = $this->tempstorePrivate->get('alogin')->get('secret');
+    }
   }
 
   public function getQr() {
     $g = new GoogleAuthenticator();
-    return $g->getURL($this->name, 'Drupal', $this->secret);
+    return $g->getURL($this->currentUser->getDisplayName(), str_replace(' ', '', $this->issuer) , $this->secret);
   }
 
   public function check($code) {
@@ -42,39 +56,43 @@ class AuthenticatorService {
     return $g->checkCode($this->secret, $code);
   }
 
-  public function store($uid, $enable) {
-    if ($this->exists($uid)) {
-      return $this->update($uid, $enable);
+  public function store($enable) {
+    if ($this->exists($this->currentUser->id())) {
+      return $this->update($enable);
     }
-    return $this->new($uid, $enable);
+    return $this->new($enable);
   }
 
-  public function exists($uid) {
+  public function exists() {
     $exists = $this->database->select($this->table, 'a')
               ->fields('a')
-              ->condition('uid', $uid, '=')
+              ->condition('uid', $this->currentUser->id(), '=')
               ->execute()
               ->fetchAssoc();
     return $exists;
   }
 
-  public function new($uid, $enable = TRUE) {
+  public function new($enable = TRUE) {
+    $secret = $this->secret;
     $create = $this->database->insert($this->table)
               ->fields([
-                'uid' => $uid,
+                'uid' => $this->currentUser->id(),
+                'secret' => $secret,
                 'enabled' => $enable
               ])->execute();
     return $create;
   }
 
-  public function update($uid, $enable) {
-    $create = $this->database->update($this->table)
+  public function update($enable) {
+    $secret = $this->secret;
+    $update = $this->database->update($this->table)
               ->fields([
+                'secret' => $secret,
                 'enabled' => $enable
               ])
-              ->condition('uid', $uid, '=')
+              ->condition('uid', $this->currentUser->id(), '=')
               ->execute();
-    return $create;
+    return $update;
   }
 
   public function is_enabled($uid) {
@@ -84,6 +102,15 @@ class AuthenticatorService {
               ->execute()
               ->fetchAssoc();
     return $enabled ? $enabled['enabled'] : false;
+  }
+
+  protected function getSecret($uid) {
+    $secret = $this->database->select($this->table, 'a')
+              ->fields('a', ['secret'])
+              ->condition('uid', $uid, '=')
+              ->execute()
+              ->fetchAssoc();
+    return $secret ? $secret['secret'] : false;
   }
 
 }
