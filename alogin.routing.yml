@@ -1,0 +1,18 @@
+alogin.two_fa_form:
+  path: '/user/{user}/enable-2fa'
+  defaults:
+    _form: '\Drupal\alogin\Form\SettingsForm'
+    _title: '2FA Settings'
+  requirements:
+    _access: 'TRUE'
+  options:
+    parameters:
+      user:
+        type: entity:user
+alogin.settings_form:
+  path: '/user/2fa'
+  defaults:
+    _form: '\Drupal\alogin\Form\TwoFaForm'
+    _title: '2FA'
+  requirements:
+    _access: 'TRUE'
