@@ -3,4 +3,3 @@ type: module
 description: 'Allows users to setup 2FA using Authenticator service.'
 core_version_requirement: ^8 || ^9
 package: 'Security'
-configure: alogin.alogin_config_form
