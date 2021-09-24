@@ -9,6 +9,7 @@ Leaks and hacks we’ve read about in recent years make it clear that passwords 
 2. Login via admin user and goto /admin/modules.
 3. Search Authenticator Login and enable it.
 4. Thats it!
+
 *Notes:*
 --------
 * Module requires the library https://github.com/sonata-project/GoogleAuthenticator.
