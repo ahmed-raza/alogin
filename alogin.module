@@ -12,6 +12,7 @@ use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\alogin\AuthenticatorService;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
 /**
  * Implements hook_help().
@@ -51,18 +52,17 @@ function alogin_ajax_callback(&$form, FormStateInterface $form_state) {
     $response->addCommand(new ReplaceCommand('.'.$form['#attributes']['class'][0], $form));
     return $response;
   }
-
   $account = user_load_by_name($form_state->getValue('name'));
+  $tempstorePrivate = \Drupal::service('tempstore.private');
+  $tempstorePrivate->get('alogin')->set('uid', $account->id());
   $authenticator = \Drupal::service('alogin.authenticator');
   if ($authenticator->is_enabled($account->id())) {
     $tempstore = \Drupal::service('tempstore.private');
     $tempstore->get('alogin')->set('uid', $account->id());
-    $redirect_command = new RedirectCommand('/user/2fa');
-    $response->addCommand($redirect_command);
+    $response->addCommand(new RedirectCommand('/user/2fa'));
     return $response;
   }
   user_login_finalize($account);
-  $redirect_command = new RedirectCommand('/user');
-  $response->addCommand($redirect_command);
+  $response->addCommand(new RedirectCommand('/user'));
   return $response;
 }
