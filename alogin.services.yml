@@ -4,4 +4,4 @@ services:
     arguments: ['alogin']
   alogin.authenticator:
     class: Drupal\alogin\AuthenticatorService
-    arguments: ['@config.factory', '@current_user', '@database']
+    arguments: ['@config.factory', '@tempstore.private', '@current_user', '@database']
