@@ -1,0 +1,7 @@
+services:
+  logger.channel.alogin:
+    parent: logger.channel_base
+    arguments: ['alogin']
+  alogin.authenticator:
+    class: Drupal\alogin\AuthenticatorService
+    arguments: ['@config.factory', '@current_user', '@database']
