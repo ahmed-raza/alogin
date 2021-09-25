@@ -84,7 +84,7 @@ class AuthenticatorService {
   }
 
   public function update($enable) {
-    $secret = $this->secret;
+    $secret = $enable ? $this->secret : '';
     $update = $this->database->update($this->table)
               ->fields([
                 'secret' => $secret,

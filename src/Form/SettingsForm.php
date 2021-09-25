@@ -132,11 +132,11 @@ class SettingsForm extends FormBase {
     $enable = $form_state->getValue('enable_2fa');
     $this->aloginAuthenticator->store($enable);
     if ($enable) {
-      $this->tempstorePrivate->get('alogin')->delete('secret');
       $this->messenger->addMessage($this->t('2FA via authenticator has been enabled on your account.'));
     } else {
       $this->messenger->addMessage($this->t('2FA via authenticator has been disabled on your account.'));
     }
+    $this->tempstorePrivate->get('alogin')->delete('secret');
   }
 
   private function getDefaults() {
