@@ -14,7 +14,7 @@ This module when enabled provides the security option to users to setup 2FA via 
 3. Search Authenticator Login and enable it.
 4. Thats it!
 
-*Dependency*
+*Dependency:*
 ------------
 You can install the dependency manually by composer.
     composer require sonata-project/google-authenticator
