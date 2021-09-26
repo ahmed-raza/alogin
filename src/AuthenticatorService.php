@@ -31,19 +31,13 @@ class AuthenticatorService {
     $this->issuer           = $this->configFactory->get('system.site')->get('name');
     $this->currentUser      = $account;
     $this->database         = $database;
-    $this->currentUid       = $this->tempstorePrivate->get('alogin')->get('uid');
+    $this->currentUid       = $this->currentUser->isAuthenticated() ? $this->currentUser->id() : $this->tempstorePrivate->get('alogin')->get('uid');
 
-    if ($this->currentUser->isAuthenticated()) {
-      $this->currentUid     = $this->currentUser->id();
-    }
     if (!$this->getSecret($this->currentUid) && !$this->tempstorePrivate->get('alogin')->get('secret')) {
       $this->tempstorePrivate->get('alogin')->set('secret', $g->generateSecret());
     }
-    if ($this->getSecret($this->currentUid)) {
-      $this->secret         = $this->getSecret($this->currentUid);
-    } else {
-      $this->secret         = $this->tempstorePrivate->get('alogin')->get('secret');
-    }
+
+    $this->secret           = $this->getSecret($this->currentUid) ? $this->getSecret($this->currentUid) : $this->tempstorePrivate->get('alogin')->get('secret');
   }
 
   public function getQr() {
