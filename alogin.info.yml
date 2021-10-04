@@ -1,5 +1,4 @@
 name: 'Authenticator Login'
 type: module
 description: 'Allows users to setup 2FA using Authenticator service.'
-core_version_requirement: ^8 || ^9
-package: 'Security'
+core_version_requirement: ^8.8 || ^9
